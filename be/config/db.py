@@ -1,5 +1,8 @@
 from supabase import create_client, Client
-from config.settings import SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
+try:
+    from config.settings import SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
+except ModuleNotFoundError:
+    from be.config.settings import SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
 
 # Public client (anon key)
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)

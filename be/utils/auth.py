@@ -1,6 +1,9 @@
 from fastapi import HTTPException, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from config.db import supabase_admin, supabase
+try:
+    from config.db import supabase_admin, supabase
+except ModuleNotFoundError:
+    from be.config.db import supabase_admin, supabase
 
 bearer_scheme = HTTPBearer(auto_error=False)
 

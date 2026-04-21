@@ -5,8 +5,12 @@ Table: public.api_keys
 """
 import secrets
 from fastapi import APIRouter, Depends, HTTPException
-from config.db import supabase_admin, supabase
-from utils.auth import get_current_user
+try:
+    from config.db import supabase_admin, supabase
+    from utils.auth import get_current_user
+except ModuleNotFoundError:
+    from be.config.db import supabase_admin, supabase
+    from be.utils.auth import get_current_user
 
 router = APIRouter(prefix="/apikeys", tags=["apikeys"])
 

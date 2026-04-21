@@ -5,8 +5,12 @@ POST /api/v1/payment/checkout  { "plan": "koperasi" | "enterprise" }
 import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-import config.settings as settings
-from utils.auth import get_current_user
+try:
+    import config.settings as settings
+    from utils.auth import get_current_user
+except ModuleNotFoundError:
+    import be.config.settings as settings
+    from be.utils.auth import get_current_user
 
 router = APIRouter(prefix="/payment", tags=["payment"])
 

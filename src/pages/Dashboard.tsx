@@ -118,7 +118,10 @@ export default function Dashboard() {
     setApiKeyLoading(true);
     setAuthError(null);
     try {
-      const h = { ...(await authHeader() as Record<string, string>), "Content-Type": "application/json" };
+      const h: Record<string, string> = {
+        ...((await authHeader()) as Record<string, string>),
+        "Content-Type": "application/json",
+      };
       if (!h.Authorization) {
         setAuthError("Session login tidak ditemukan. Silakan login ulang.");
         navigate("/login", { replace: true });
@@ -186,7 +189,10 @@ export default function Dashboard() {
     setPricingUrl(null);
     setAuthError(null);
     try {
-      const h = { ...(await authHeader() as Record<string, string>), "Content-Type": "application/json" };
+      const h: Record<string, string> = {
+        ...((await authHeader()) as Record<string, string>),
+        "Content-Type": "application/json",
+      };
       if (!h.Authorization) {
         setAuthError("Session login tidak ditemukan. Silakan login ulang.");
         navigate("/login", { replace: true });

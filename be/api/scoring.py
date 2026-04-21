@@ -4,7 +4,10 @@ GET /api/v1/scoring/{email}
 Requires: x-api-key header (partner API key from api_keys table)
 """
 from fastapi import APIRouter, Header, HTTPException
-from config.db import supabase_admin, supabase
+try:
+    from config.db import supabase_admin, supabase
+except ModuleNotFoundError:
+    from be.config.db import supabase_admin, supabase
 
 router = APIRouter(prefix="/scoring", tags=["scoring"])
 

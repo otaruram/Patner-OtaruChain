@@ -5,12 +5,18 @@ Shares the same Supabase DB.
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from config.settings import CORS_ORIGINS
-
-from api.apikeys import router as apikeys_router
-from api.payment import router as payment_router
-from api.stats import router as stats_router
-from api.scoring import router as scoring_router
+try:
+    from config.settings import CORS_ORIGINS
+    from api.apikeys import router as apikeys_router
+    from api.payment import router as payment_router
+    from api.stats import router as stats_router
+    from api.scoring import router as scoring_router
+except ModuleNotFoundError:
+    from be.config.settings import CORS_ORIGINS
+    from be.api.apikeys import router as apikeys_router
+    from be.api.payment import router as payment_router
+    from be.api.stats import router as stats_router
+    from be.api.scoring import router as scoring_router
 
 app = FastAPI(
     title="OtaruChain Partner API",
