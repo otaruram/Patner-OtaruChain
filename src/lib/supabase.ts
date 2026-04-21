@@ -9,8 +9,20 @@ export const supabase = createClient(url, key, {
 
 export const API = import.meta.env.VITE_API_URL || "https://api-ocr.xyz";
 
-export async function authHeader(): Promise<HeadersInit> {
+export async function getAccessToken(): Promise<string | null> {
   const { data } = await supabase.auth.getSession();
-  const token = data.session?.access_token;
+  if (data.session?.access_token) return data.session.access_token;
+
+  // Fallback: ask current user; Supabase client can recover session from storage.
+  const userRes = await supabase.auth.getUser();
+  if (userRes.data.user) {
+    const refreshed = await supabase.auth.refreshSession();
+    return refreshed.data.session?.access_token ?? null;
+  }
+  return null;
+}
+
+export async function authHeader(): Promise<HeadersInit> {
+  const token = await getAccessToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 }

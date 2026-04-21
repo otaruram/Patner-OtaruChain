@@ -75,6 +75,7 @@ export default function Dashboard() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchResult, setSearchResult] = useState<ScoringResult | null>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   // Pricing
   const [pricingPlan, setPricingPlan] = useState<"koperasi" | "enterprise" | null>(null);
@@ -100,19 +101,35 @@ export default function Dashboard() {
   }
 
   async function fetchMyKey() {
+    setAuthError(null);
     const headers = await authHeader();
     if (!(headers as Record<string, string>).Authorization) return;
     try {
       const res = await fetch(`${API}/api/v1/apikeys/me`, { headers });
+      if (res.status === 401) {
+        setAuthError("Session login expired. Silakan login ulang.");
+        return;
+      }
       if (res.ok) setApiKey(await res.json());
     } catch { /* ignore */ }
   }
 
   async function generateKey() {
     setApiKeyLoading(true);
+    setAuthError(null);
     try {
       const h = { ...(await authHeader() as Record<string, string>), "Content-Type": "application/json" };
+      if (!h.Authorization) {
+        setAuthError("Session login tidak ditemukan. Silakan login ulang.");
+        navigate("/login", { replace: true });
+        return;
+      }
       const res = await fetch(`${API}/api/v1/apikeys/generate`, { method: "POST", headers: h });
+      if (res.status === 401) {
+        setAuthError("Token tidak valid di backend. Silakan login ulang.");
+        navigate("/login", { replace: true });
+        return;
+      }
       if (res.ok) setApiKey(await res.json());
     } finally { setApiKeyLoading(false); }
   }
@@ -120,8 +137,20 @@ export default function Dashboard() {
   async function revokeKey() {
     if (!confirm("Revoke API key ini? Key tidak bisa digunakan lagi.")) return;
     setApiKeyLoading(true);
+    setAuthError(null);
     try {
-      await fetch(`${API}/api/v1/apikeys/me`, { method: "DELETE", headers: await authHeader() });
+      const h = await authHeader();
+      if (!(h as Record<string, string>).Authorization) {
+        setAuthError("Session login tidak ditemukan. Silakan login ulang.");
+        navigate("/login", { replace: true });
+        return;
+      }
+      const res = await fetch(`${API}/api/v1/apikeys/me`, { method: "DELETE", headers: h });
+      if (res.status === 401) {
+        setAuthError("Token tidak valid di backend. Silakan login ulang.");
+        navigate("/login", { replace: true });
+        return;
+      }
       setApiKey(null);
     } finally { setApiKeyLoading(false); }
   }
@@ -155,13 +184,26 @@ export default function Dashboard() {
     setPricingPlan(plan);
     setPricingStatus("loading");
     setPricingUrl(null);
+    setAuthError(null);
     try {
       const h = { ...(await authHeader() as Record<string, string>), "Content-Type": "application/json" };
+      if (!h.Authorization) {
+        setAuthError("Session login tidak ditemukan. Silakan login ulang.");
+        navigate("/login", { replace: true });
+        setPricingStatus("error");
+        return;
+      }
       const res = await fetch(`${API}/api/v1/payment/checkout`, {
         method: "POST",
         headers: h,
         body: JSON.stringify({ plan }),
       });
+      if (res.status === 401) {
+        setAuthError("Token tidak valid di backend. Silakan login ulang.");
+        navigate("/login", { replace: true });
+        setPricingStatus("error");
+        return;
+      }
       if (!res.ok) throw new Error();
       const data = await res.json();
       setPricingUrl(data.payment_url);
@@ -207,6 +249,11 @@ export default function Dashboard() {
       </nav>
 
       <div className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-10 space-y-16">
+        {authError && (
+          <div className="border border-red-200 bg-red-50 text-red-700 text-sm px-4 py-3 max-w-2xl">
+            {authError}
+          </div>
+        )}
 
         {/* ── Stats ──────────────────────────────────────────────── */}
         <section className={section !== "dashboard" ? "hidden sm:block" : ""}>
