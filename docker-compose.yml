@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  partner-api:
+    build:
+      context: ./be
+      dockerfile: Dockerfile
+    container_name: otaruchain-partner-api
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    env_file:
+      - ./be/.env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
